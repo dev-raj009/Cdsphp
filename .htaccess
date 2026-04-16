@@ -1,0 +1,42 @@
+# SpidyUniverse — Apache Security Config
+
+Options -Indexes
+Options -MultiViews
+
+# Block direct access to php/ and data folders
+<FilesMatch "^(config|api|security)\.php$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Block direct access to php/ directory
+  RewriteRule ^php/ - [F,L]
+
+  # Force HTTPS
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always unset X-Powered-By
+  Header always set Server "SpidyUniverse"
+</IfModule>
+
+# Disable ETags
+FileETag None
+
+# Cache static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
