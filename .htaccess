@@ -1,23 +1,28 @@
-# SpidyUniverse — Apache Security Config
+# ============================================
+# SpidyUniverse — Apache Security Config (FIXED)
+# ============================================
 
 Options -Indexes
 Options -MultiViews
 
-# Block direct access to php/ and data folders
+# Block direct access to sensitive PHP files
 <FilesMatch "^(config|api|security)\.php$">
-  Order allow,deny
-  Deny from all
+  Require all denied
 </FilesMatch>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # Block direct access to php/ directory
+  # ❗ IMPORTANT FIX: Allow direct PHP files like batch.php, player.php etc.
+  RewriteCond %{REQUEST_URI} !\.php$
+
+  # Block direct access to /php/ folder
   RewriteRule ^php/ - [F,L]
 
-  # Force HTTPS
-  # RewriteCond %{HTTPS} off
-  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+  # If file/folder does not exist → route to index.php
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [L]
 </IfModule>
 
 # Security headers
