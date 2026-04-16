@@ -1,47 +1,37 @@
 # ============================================
-# SpidyUniverse — Apache Security Config (FIXED)
+# SpidyUniverse — FINAL FIXED CONFIG
 # ============================================
 
 Options -Indexes
 Options -MultiViews
 
-# Block direct access to sensitive PHP files
-<FilesMatch "^(config|api|security)\.php$">
-  Require all denied
-</FilesMatch>
-
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # ❗ IMPORTANT FIX: Allow direct PHP files like batch.php, player.php etc.
-  RewriteCond %{REQUEST_URI} !\.php$
+  # ✅ IMPORTANT: Allow all existing files directly
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
 
-  # Block direct access to /php/ folder
+  # ✅ Allow all existing folders
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # ❌ Block direct access to /php/
   RewriteRule ^php/ - [F,L]
 
-  # If file/folder does not exist → route to index.php
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
+  # ✅ Only non-existing routes go to index.php
   RewriteRule ^ index.php [L]
 </IfModule>
+
+# Block sensitive files
+<FilesMatch "^(config|api|security)\.php$">
+  Require all denied
+</FilesMatch>
 
 # Security headers
 <IfModule mod_headers.c>
   Header always set X-Frame-Options "SAMEORIGIN"
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "no-referrer"
-  Header always set X-XSS-Protection "1; mode=block"
-  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
   Header always unset X-Powered-By
-  Header always set Server "SpidyUniverse"
-</IfModule>
-
-# Disable ETags
-FileETag None
-
-# Cache static assets
-<IfModule mod_expires.c>
-  ExpiresActive On
-  ExpiresByType text/css "access plus 1 week"
-  ExpiresByType application/javascript "access plus 1 week"
 </IfModule>
